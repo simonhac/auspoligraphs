@@ -6,22 +6,31 @@ import type {
 
 /**
  * Real Australian federal House of Representatives results for the last three
- * elections (2019, 2022, 2025), used as the toggle states for the Votes, Seats
- * and Composition Bar demos.
+ * elections (2019, 2022, 2025), plus the RedBridge / Accent Research MRP
+ * projection (May 2026) — used as the toggle states for the Votes, Seats and
+ * Composition Bar demos.
  *
- * Figures are first-preference (primary) vote shares/counts, swings, and seats
- * grouped into six rows: Labor, the Coalition (Liberal + National + LNP + CLP
- * combined), Greens, One Nation, all non-party Independents, and Other (Katter's
- * Australian Party, Centre Alliance, UAP and remaining minor parties). Compiled
- * from the AEC Tally Room national first-preferences-by-party pages and
+ * Election figures are first-preference (primary) vote shares/counts, swings,
+ * and seats grouped into six rows: Labor, the Coalition (Liberal + National +
+ * LNP + CLP combined), Greens, One Nation, all non-party Independents, and Other
+ * (Katter's Australian Party, Centre Alliance, UAP and remaining minor parties).
+ * Compiled from the AEC Tally Room national first-preferences-by-party pages and
  * cross-checked against Wikipedia's results articles. Seats sum to the chamber
  * total each year (151 in 2019/2022, 150 in 2025); majority is 76 throughout.
+ *
+ * The "RedBridge MRP" state is a projection, not a count: primary votes are
+ * Labor 31, One Nation 28, Coalition 21, Greens 11 and "All Others" 9 (the MRP
+ * does not split independents from other minor parties on vote share, so they
+ * are shown as a single combined row). Seats: Labor 76, One Nation 53, Coalition
+ * 12, Greens 0, All Others 9 (8 independents + 1 Katter). Swings/changes are vs
+ * the 2025 result. Source: RedBridge Group / Accent Research MRP for the AFR,
+ * fieldwork 29 Apr – 14 May 2026.
  */
 
-export const ELECTION_YEARS = ["2019", "2022", "2025"] as const;
+export const ELECTION_YEARS = ["2019", "2022", "2025", "RedBridge MRP"] as const;
 export type ElectionYear = (typeof ELECTION_YEARS)[number];
 
-type PartyId = "alp" | "coa" | "grn" | "onp" | "ind" | "oth";
+type PartyId = "alp" | "coa" | "grn" | "onp" | "ind" | "oth" | "all";
 
 interface PartyMeta {
   id: PartyId;
@@ -38,14 +47,17 @@ const FED_PARTIES: Record<PartyId, PartyMeta> = {
   onp: { id: "onp", code: "ONP", name: "One Nation", color: "#F2811C" },
   ind: { id: "ind", code: "IND", name: "Independents", color: "#3D8E8E" },
   oth: { id: "oth", code: "OTH", name: "Other", color: "#8A8278" },
+  // Combined independents + other minor parties, used only by the projection
+  // states where the source reports a single "all others" figure.
+  all: { id: "all", code: "OTH", name: "All Others", color: "#8A8278" },
 };
 
 interface ResultRow {
   id: PartyId;
   /** First-preference vote share (%). */
   votePct: number;
-  /** First-preference vote count. */
-  voteCount: number;
+  /** First-preference vote count. Omitted for projections (no count exists). */
+  voteCount?: number;
   /** Primary-vote swing vs the previous election (percentage points). */
   swing: number;
   /** House seats won. */
@@ -98,10 +110,24 @@ const RESULTS: Record<ElectionYear, ElectionResult> = {
       { id: "oth", votePct: 7.74, voteCount: 1_198_854, swing: -1.48, seats: 2, change: 0 },
     ],
   },
+  // Projection — no vote counts. Vote shares/swings and seat changes are vs 2025.
+  // "All Others" combines independents (8 seats) + Katter (1) into one row,
+  // mirroring the MRP's single "all others" vote figure.
+  "RedBridge MRP": {
+    total: 150,
+    majority: 76,
+    rows: [
+      { id: "alp", votePct: 31, swing: -3.56, seats: 76, change: -18 },
+      { id: "coa", votePct: 21, swing: -10.82, seats: 12, change: -31 },
+      { id: "grn", votePct: 11, swing: -1.2, seats: 0, change: -1 },
+      { id: "onp", votePct: 28, swing: 21.6, seats: 53, change: 53 },
+      { id: "all", votePct: 9, swing: -6.01, seats: 9, change: -3 },
+    ],
+  },
 };
 
 /** Left→right spectrum order for the composition bar. */
-const COMPOSITION_ORDER: PartyId[] = ["grn", "alp", "ind", "oth", "coa", "onp"];
+const COMPOSITION_ORDER: PartyId[] = ["grn", "alp", "ind", "all", "oth", "coa", "onp"];
 
 const byYear = <T>(fn: (r: ElectionResult) => T): Record<ElectionYear, T> =>
   Object.fromEntries(

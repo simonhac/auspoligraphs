@@ -80,3 +80,7 @@ export {
   FlowMatrixEditor,
   type FlowMatrixEditorProps,
 } from "./swings/FlowMatrixEditor";
+export {
+  PreferenceFlowsPanel,
+  type PreferenceFlowsPanelProps,
+} from "./swings/PreferenceFlowsPanel";

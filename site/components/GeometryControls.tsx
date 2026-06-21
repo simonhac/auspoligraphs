@@ -19,15 +19,6 @@ export function GeometryControls({ value, onChange }: GeometryControlsProps) {
       <span className="gc-heading">Geometry</span>
       <div className="gc-grid">
         <Slider
-          label="Outer radius"
-          value={value.outerRadius}
-          min={GEO_BOUNDS.outerRadius.min}
-          max={GEO_BOUNDS.outerRadius.max}
-          step={5}
-          display={`${Math.round(value.outerRadius)}px`}
-          onChange={(outerRadius) => onChange({ ...value, outerRadius })}
-        />
-        <Slider
           label="Inner radius"
           value={value.innerRadiusRatio}
           min={GEO_BOUNDS.innerRadiusRatio.min}

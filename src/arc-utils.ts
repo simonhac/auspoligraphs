@@ -109,6 +109,13 @@ function distributeSeats(
  * `+x` pointing right and `−y` pointing up; use the returned `viewBox` to frame
  * them in an SVG.
  *
+ * With {@link ArcLayoutOptions.corridor} on (and an even total), a centered
+ * aisle splits the chamber into two equal halves. The aisle is a fixed
+ * geometric divider at the top of the arc — it is *not* a coalition boundary,
+ * so a party whose seats span the midpoint will straddle it whenever the
+ * parties to its left don't sum to exactly half the chamber. That straddle is
+ * intentional: it shows which bloc holds the floor.
+ *
  * @param parties Parties in left→right order.
  * @param options Layout tuning. See {@link ArcLayoutOptions}.
  */
@@ -149,20 +156,63 @@ export function computeArcLayout(
     seatsPerRow = distributeSeats(total, radii, distribution);
   }
 
+  // Corridor: a centered aisle splitting the chamber into equal halves. Only
+  // meaningful with an even total (otherwise no clean half/half split exists),
+  // and it changes only seat placement — the per-row counts above are identical
+  // whether the corridor is on or off, so toggling it just opens/closes the
+  // aisle without reflowing seats between rows. The aisle is a straight radial
+  // wedge sized to ≈ one seat-width of the densest (outer) row.
+  const corridorActive = !!options.corridor && total % 2 === 0;
+  const nOuter = seatsPerRow[rows - 1] || 1;
+  const corridorHalfAngle = corridorActive
+    ? clamp(Math.PI / (2 * nOuter), 0.02, Math.PI / 6)
+    : 0;
+
   // Build seat positions row by row (angle runs π → 0, i.e. left → right).
   const placed: { row: number; angle: number; x: number; y: number }[] = [];
-  for (let r = 0; r < rows; r++) {
-    const n = seatsPerRow[r];
-    const radius = radii[r];
-    for (let j = 0; j < n; j++) {
-      const frac = n === 1 ? 0.5 : (j + 0.5) / n;
-      const angle = Math.PI * (1 - frac);
-      placed.push({
-        row: r,
-        angle,
-        x: radius * Math.cos(angle),
-        y: -radius * Math.sin(angle),
-      });
+  if (corridorActive) {
+    const c = corridorHalfAngle;
+    const sideSpan = Math.PI / 2 - c; // angular span of each side of the aisle
+    // Odd rows can't split evenly; hand the extra seat to alternating sides so
+    // the global left/right totals stay exactly equal (the even total
+    // guarantees an even number of odd rows).
+    let oddRows = 0;
+    for (let r = 0; r < rows; r++) {
+      const n = seatsPerRow[r];
+      if (n === 0) continue;
+      const radius = radii[r];
+      let mL: number;
+      if (n % 2 === 0) {
+        mL = n / 2;
+      } else {
+        const extraLeft = oddRows % 2 === 0;
+        oddRows++;
+        mL = extraLeft ? (n + 1) / 2 : (n - 1) / 2;
+      }
+      const mR = n - mL;
+      for (let k = 0; k < mL; k++) {
+        const angle = Math.PI / 2 + c + ((k + 0.5) / mL) * sideSpan; // (π/2+c, π)
+        placed.push({ row: r, angle, x: radius * Math.cos(angle), y: -radius * Math.sin(angle) });
+      }
+      for (let k = 0; k < mR; k++) {
+        const angle = Math.PI / 2 - c - ((k + 0.5) / mR) * sideSpan; // (0, π/2−c)
+        placed.push({ row: r, angle, x: radius * Math.cos(angle), y: -radius * Math.sin(angle) });
+      }
+    }
+  } else {
+    for (let r = 0; r < rows; r++) {
+      const n = seatsPerRow[r];
+      const radius = radii[r];
+      for (let j = 0; j < n; j++) {
+        const frac = n === 1 ? 0.5 : (j + 0.5) / n;
+        const angle = Math.PI * (1 - frac);
+        placed.push({
+          row: r,
+          angle,
+          x: radius * Math.cos(angle),
+          y: -radius * Math.sin(angle),
+        });
+      }
     }
   }
 
@@ -192,8 +242,11 @@ export function computeArcLayout(
   // adjacent rows. By construction these spacings are roughly equal.
   const radialSpacing =
     rows === 1 ? outerRadius - innerRadius : (outerRadius - innerRadius) / (rows - 1);
+  // With a corridor the seats occupy only the two side spans (total angular
+  // width π − 2c), so the per-seat arc length is correspondingly smaller.
+  const arcAngle = corridorActive ? Math.PI - 2 * corridorHalfAngle : Math.PI;
   const arcSpacings = radii.map((r, i) =>
-    seatsPerRow[i] > 0 ? (Math.PI * r) / seatsPerRow[i] : Infinity,
+    seatsPerRow[i] > 0 ? (arcAngle * r) / seatsPerRow[i] : Infinity,
   );
   const minSpacing = Math.min(radialSpacing, ...arcSpacings);
   const seatRadius = options.seatRadius ?? seatRatio * minSpacing;

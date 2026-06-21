@@ -114,6 +114,58 @@ describe("computeArcLayout", () => {
     expect(messy.seats).toHaveLength(5);
   });
 
+  describe("corridor mode", () => {
+    it("splits an even chamber into exactly equal halves with an empty aisle", () => {
+      const layout = computeArcLayout(AU_PREDICTED, { corridor: true });
+      const left = layout.seats.filter((s) => s.x < -1e-9).length;
+      const right = layout.seats.filter((s) => s.x > 1e-9).length;
+      const onAxis = layout.seats.filter((s) => Math.abs(s.x) <= 1e-9).length;
+      expect(left).toBe(75);
+      expect(right).toBe(75);
+      expect(onAxis).toBe(0);
+    });
+
+    it("opens/closes the aisle without reflowing seats between rows", () => {
+      const off = computeArcLayout(AU_PREDICTED);
+      const on = computeArcLayout(AU_PREDICTED, { corridor: true });
+      expect(on.seatsPerRow).toEqual(off.seatsPerRow);
+      expect(on.rows).toBe(off.rows);
+    });
+
+    it("leaves a real gap down the middle", () => {
+      const layout = computeArcLayout(AU_PREDICTED, { corridor: true });
+      const minAbsX = Math.min(...layout.seats.map((s) => Math.abs(s.x)));
+      // The nearest dot to the axis is clear of it by a visible margin.
+      expect(minAbsX).toBeGreaterThan(layout.seatRadius);
+    });
+
+    it("never overlaps dots with the corridor open", () => {
+      const layout = computeArcLayout(AU_PREDICTED, { corridor: true });
+      const minDist = 2 * layout.seatRadius - 1e-6;
+      for (let i = 0; i < layout.seats.length; i++) {
+        for (let j = i + 1; j < layout.seats.length; j++) {
+          const a = layout.seats[i];
+          const b = layout.seats[j];
+          expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(minDist);
+        }
+      }
+    });
+
+    it("ignores the corridor for an odd chamber (identical to corridor off)", () => {
+      const odd: Party[] = [{ name: "A", color: "#000", seats: 51 }];
+      const off = computeArcLayout(odd);
+      const on = computeArcLayout(odd, { corridor: true });
+      expect(on.seats.map((s) => [s.x, s.y])).toEqual(off.seats.map((s) => [s.x, s.y]));
+    });
+
+    it("handles tiny and empty chambers", () => {
+      const two = computeArcLayout([{ name: "A", color: "#000", seats: 2 }], { corridor: true });
+      expect(two.seats.filter((s) => s.x < 0)).toHaveLength(1);
+      expect(two.seats.filter((s) => s.x > 0)).toHaveLength(1);
+      expect(computeArcLayout([], { corridor: true }).seats).toHaveLength(0);
+    });
+  });
+
   it("scales to a large parliament (UK House of Commons, 650 seats)", () => {
     const uk: Party[] = [
       { name: "Labour", color: "#E4003B", seats: 411 },

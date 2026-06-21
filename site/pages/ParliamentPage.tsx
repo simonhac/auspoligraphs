@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Party } from "auspoligraphs";
 import { ParliamentArc, ResultsTable } from "auspoligraphs/react";
 import { Demo } from "../components/Demo";
@@ -18,9 +18,18 @@ import {
 
 const SCENARIO_OPTIONS: ToggleOption<Scenario>[] = [
   { value: "results", label: "Result" },
-  { value: "predicted", label: "Predicted" },
+  { value: "predicted", label: "RedBridge MRP" },
   { value: "custom", label: "Custom" },
 ];
+
+type CorridorValue = "off" | "on";
+const CORRIDOR_OPTIONS: ToggleOption<CorridorValue>[] = [
+  { value: "off", label: "Off" },
+  { value: "on", label: "On" },
+];
+
+const sumSeats = (parties: { seats: number }[]) =>
+  parties.reduce((sum, p) => sum + p.seats, 0);
 
 /** Seed the editor from the current chamber so Custom mode opens on real data. */
 function makeDefaultGroupings(): Grouping[] {
@@ -36,6 +45,9 @@ export function ParliamentPage() {
   const { scenario, setScenario, groupings, setGroupings, geometry, setGeometry } =
     useCustomConfigUrl(makeDefaultGroupings);
 
+  // Corridor applies to every scenario, so its state lives above the switch.
+  const [corridor, setCorridor] = useState(false);
+
   const customArcParties = useMemo<Party[]>(
     () =>
       groupings.map((g) => ({
@@ -49,7 +61,6 @@ export function ParliamentPage() {
 
   const arcGeometryProps = useMemo(
     () => ({
-      outerRadius: geometry.outerRadius,
       innerRadiusRatio: geometry.innerRadiusRatio,
       seatRadiusRatio: geometry.seatRadiusRatio,
       // "auto" → let the arc derive the row count.
@@ -61,6 +72,14 @@ export function ParliamentPage() {
 
   const totalCustomSeats = customArcParties.reduce((sum, p) => sum + p.seats, 0);
 
+  // A corridor needs a clean half/half split, so only an even total qualifies.
+  const activeTotal =
+    scenario === "custom"
+      ? totalCustomSeats
+      : sumSeats(scenario === "results" ? RESULTS_PARTIES : PREDICTED_PARTIES);
+  const corridorAvailable = activeTotal > 0 && activeTotal % 2 === 0;
+  const corridorOn = corridor && corridorAvailable;
+
   const tableParties = PARLIAMENT_PARTIES.map((p) => ({
     id: p.id,
     name: p.name,
@@ -69,12 +88,26 @@ export function ParliamentPage() {
   }));
 
   const controls = (
-    <Toggle
-      label="Scenario"
-      options={SCENARIO_OPTIONS}
-      value={scenario}
-      onChange={setScenario}
-    />
+    <>
+      <Toggle
+        label="Scenario"
+        options={SCENARIO_OPTIONS}
+        value={scenario}
+        onChange={setScenario}
+      />
+      <div className="corridor-control">
+        <Toggle
+          label="Corridor"
+          options={CORRIDOR_OPTIONS}
+          value={corridor ? "on" : "off"}
+          onChange={(v) => setCorridor(v === "on")}
+          disabled={!corridorAvailable}
+        />
+        {!corridorAvailable && (
+          <span className="corridor-hint">needs an even number of MPs</span>
+        )}
+      </div>
+    </>
   );
 
   return (
@@ -96,7 +129,11 @@ export function ParliamentPage() {
       {scenario === "custom" ? (
         <div className="parliament-panel">
           {totalCustomSeats > 0 ? (
-            <ParliamentArc parties={customArcParties} {...arcGeometryProps} />
+            <ParliamentArc
+              parties={customArcParties}
+              {...arcGeometryProps}
+              corridor={corridorOn}
+            />
           ) : (
             <p className="pc-empty">Add seats to render the arc.</p>
           )}
@@ -111,6 +148,7 @@ export function ParliamentPage() {
         <div className="parliament-panel">
           <ParliamentArc
             parties={scenario === "results" ? RESULTS_PARTIES : PREDICTED_PARTIES}
+            corridor={corridorOn}
           />
           <ResultsTable
             parties={tableParties}

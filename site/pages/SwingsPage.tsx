@@ -10,7 +10,11 @@ import {
   type PreferenceFlows,
   type SeatBaseline,
 } from "auspoligraphs";
-import { SwingPanel, DemographicSkewPanel } from "auspoligraphs/react";
+import {
+  SwingPanel,
+  DemographicSkewPanel,
+  PreferenceFlowsPanel,
+} from "auspoligraphs/react";
 import { Demo } from "../components/Demo";
 import vic2022 from "../fixtures/vic2022.json";
 
@@ -78,9 +82,9 @@ export function SwingsPage() {
       title="Swing Panels"
       description={
         <>
-          Interactive primary-swing sliders with auto/manual redistribution, an
-          editable preference-flow matrix, and a demographic-skew panel whose
-          weighted average tracks the One Nation swing. Drag a slider — the
+          Interactive primary-swing sliders with auto/manual redistribution, a
+          demographic-skew panel whose weighted average tracks the One Nation
+          swing, and an editable preference-flow matrix. Drag a slider — the
           automatic (hollow) sliders move to absorb it and totals stay
           conserved. Backed by the full wallofadvantage scenario engine over the
           VIC 2022 lower-house dataset.
@@ -96,6 +100,7 @@ export function SwingsPage() {
           partyOrder={partyUniverse}
           aggregatedPrimaries={aggregatedPrimaries}
           flows={flows}
+          hidePreferenceMatrix
         />
         <DemographicSkewPanel
           scenario={scenario}
@@ -103,6 +108,13 @@ export function SwingsPage() {
           statewideOnpPct={statewideOnpPct}
           demoStats={demoStats}
           dispatch={dispatch}
+        />
+        <PreferenceFlowsPanel
+          scenario={scenario}
+          dispatch={dispatch}
+          parties={parties}
+          partyOrder={partyUniverse}
+          flows={flows}
         />
       </div>
     </Demo>
