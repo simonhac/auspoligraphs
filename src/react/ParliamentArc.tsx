@@ -17,6 +17,11 @@ export interface ParliamentArcProps {
   seatRadius?: number;
   /** Seats-per-row distribution: `"linear"` (default) or `"proportional"`. */
   distribution?: "linear" | "proportional";
+  /**
+   * Open a centered aisle splitting the chamber into equal halves so the
+   * balance of power is easy to read. Ignored if the total seat count is odd.
+   */
+  corridor?: boolean;
   /** Animate dots when seat counts change. Default true. */
   animate?: boolean;
   /** Transition duration in milliseconds when `animate` is set. Default 500. */
@@ -48,6 +53,7 @@ export function ParliamentArc({
   seatRadiusRatio,
   seatRadius,
   distribution,
+  corridor,
   animate = true,
   transitionMs = 500,
   highlightOnHover = true,
@@ -67,8 +73,9 @@ export function ParliamentArc({
         seatRadiusRatio,
         seatRadius,
         distribution,
+        corridor,
       }),
-    [parties, rows, outerRadius, innerRadiusRatio, seatRadiusRatio, seatRadius, distribution],
+    [parties, rows, outerRadius, innerRadiusRatio, seatRadiusRatio, seatRadius, distribution, corridor],
   );
 
   const getTooltip = tooltip ?? ((seat: ArcSeat) => seat.party.name);

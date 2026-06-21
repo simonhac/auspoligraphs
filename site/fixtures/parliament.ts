@@ -6,7 +6,16 @@ import type { ResultsColumn } from "auspoligraphs/react";
  * examples/parliament.html. Two scenarios per party — an actual `results`
  * seat count and a hypothetical `predicted` one — form the A/B pair the
  * ParliamentArc animates between, while the ResultsTable shows both columns
- * plus the change. House of Representatives = 150 seats. Illustrative data.
+ * plus the change. House of Representatives = 150 seats.
+ *
+ * `results` is the 2025 federal election outcome. `predicted` is the
+ * Redbridge / Accent Research MRP projection (May 2026): Labor 76, One Nation
+ * 53, Coalition 12, Independents 8, Katter 1, Greens 0, Centre Alliance 0.
+ *
+ * Parties are ordered left→right along the political spectrum so the arc renders
+ * the crossbench (Greens, Independent, Centre Alliance, Katter) grouped in the
+ * centre, between the major blocs — Labor on the left, Coalition + One Nation on
+ * the right. ParliamentArc lays parties out in this array order.
  */
 export interface ScenarioParty {
   id: string;
@@ -18,12 +27,12 @@ export interface ScenarioParty {
 
 export const PARLIAMENT_PARTIES: ScenarioParty[] = [
   { id: "alp", name: "Labor", color: "#DE3A30", results: 94, predicted: 76 },
-  { id: "onp", name: "One Nation", color: "#F2811C", results: 0, predicted: 53 },
-  { id: "coa", name: "Coalition", color: "#2E6DB4", results: 43, predicted: 12 },
-  { id: "ind", name: "Independent", color: "#8C8C8C", results: 10, predicted: 8 },
-  { id: "kap", name: "Katter's Australian Party", color: "#6E1A1A", results: 1, predicted: 1 },
   { id: "grn", name: "Greens", color: "#10A05F", results: 1, predicted: 0 },
+  { id: "ind", name: "Independent", color: "#8C8C8C", results: 10, predicted: 8 },
   { id: "ca", name: "Centre Alliance", color: "#F2C200", results: 1, predicted: 0 },
+  { id: "kap", name: "Katter's Australian Party", color: "#6E1A1A", results: 1, predicted: 1 },
+  { id: "coa", name: "Coalition", color: "#2E6DB4", results: 43, predicted: 12 },
+  { id: "onp", name: "One Nation", color: "#F2811C", results: 0, predicted: 53 },
 ];
 
 const seatsFor = (key: "results" | "predicted"): Party[] =>
@@ -54,7 +63,7 @@ export const RESULTS_COLUMN: ResultsColumn = {
   values: PARLIAMENT_PARTIES.map((p) => p.results),
 };
 export const PREDICTED_COLUMN: ResultsColumn = {
-  header: "Predicted",
+  header: "RedBridge MRP",
   values: PARLIAMENT_PARTIES.map((p) => p.predicted),
 };
 

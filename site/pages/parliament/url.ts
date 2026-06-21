@@ -6,14 +6,13 @@
  * Encoding (kept short + human-tolerable):
  *   ?mode=custom
  *   ?g=<name>~<hex6>~<seats>|<name>~<hex6>~<seats>|…
- *   ?geo=<outerRadius>_<innerRadiusRatio>_<seatRadiusRatio>_<rows|auto>_<linear|proportional>
+ *   ?geo=<innerRadiusRatio>_<seatRadiusRatio>_<rows|auto>_<linear|proportional>
  *
  * Grouping ids are NOT serialised — they are regenerated on load (they only
  * need to be stable within a session for React/dnd-kit keys).
  */
 
 import {
-  ARC_OUTER_RADIUS,
   ARC_INNER_RATIO,
   ARC_SEAT_RATIO,
   ARC_DISTRIBUTION,
@@ -27,7 +26,6 @@ export interface Grouping {
 }
 
 export interface Geometry {
-  outerRadius: number;
   innerRadiusRatio: number;
   seatRadiusRatio: number;
   /** Concentric rows, or "auto" to let the arc derive a pleasing count. */
@@ -52,7 +50,6 @@ interface Range {
 }
 
 export const GEO_BOUNDS = {
-  outerRadius: { min: 120, max: 360 } as Range,
   innerRadiusRatio: { min: 0.05, max: 0.95 } as Range,
   seatRadiusRatio: { min: 0.2, max: 0.8 } as Range,
   rows: { min: 1, max: 20 } as Range,
@@ -61,7 +58,6 @@ export const GEO_BOUNDS = {
 /** Seed geometry = the library's own defaults, so a fresh Custom arc looks
  *  identical to the read-only one until the user changes something. */
 export const DEFAULT_GEOMETRY: Geometry = {
-  outerRadius: ARC_OUTER_RADIUS,
   innerRadiusRatio: ARC_INNER_RATIO,
   seatRadiusRatio: ARC_SEAT_RATIO,
   rows: "auto",
@@ -118,7 +114,6 @@ function encodeGrouping(g: Grouping): string {
 function encodeGeometry(g: Geometry): string {
   const num = (n: number) => String(+n.toFixed(4));
   return [
-    num(g.outerRadius),
     num(g.innerRadiusRatio),
     num(g.seatRadiusRatio),
     g.rows === "auto" ? "auto" : String(Math.round(g.rows)),
@@ -159,10 +154,16 @@ function decodeGroupings(raw: string | null): Grouping[] {
 function decodeGeometry(raw: string | null): Geometry {
   const d = DEFAULT_GEOMETRY;
   if (!raw) return { ...d };
-  const [or, ir, sr, rows, dist] = raw.split("_");
+  // Parse from the END so we tolerate the legacy 5-field form that led with an
+  // `outerRadius` (now removed): distribution is always last, then rows, seat
+  // size, inner radius. Any leading legacy value is ignored.
+  const parts = raw.split("_");
+  const dist = parts.at(-1);
+  const rows = parts.at(-2);
+  const sr = parts.at(-3);
+  const ir = parts.at(-4);
   const parsedRows = Number(rows);
   return {
-    outerRadius: clampNum(Number(or), GEO_BOUNDS.outerRadius, d.outerRadius),
     innerRadiusRatio: clampNum(Number(ir), GEO_BOUNDS.innerRadiusRatio, d.innerRadiusRatio),
     seatRadiusRatio: clampNum(Number(sr), GEO_BOUNDS.seatRadiusRatio, d.seatRadiusRatio),
     rows:

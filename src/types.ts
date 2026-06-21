@@ -80,6 +80,12 @@ export interface ArcLayoutOptions {
    *   in every row).
    */
   distribution?: "linear" | "proportional";
+  /**
+   * Open a centered aisle ("corridor") at the top of the arc, splitting the
+   * chamber into two equal halves so the balance of power is easy to read.
+   * Ignored unless the total seat count is even. Default false.
+   */
+  corridor?: boolean;
 }
 
 /** Fully resolved parliament arc layout. */
