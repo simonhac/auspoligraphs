@@ -15,7 +15,7 @@ import type { ArcLayout, ArcLayoutOptions, ArcSeat, Party } from "./types";
 /** Default outer radius of the arc in pixels. */
 export const ARC_OUTER_RADIUS = 250;
 /** Default inner radius as a fraction of the outer radius. */
-export const ARC_INNER_RATIO = 0.45;
+export const ARC_INNER_RATIO = 0.14;
 /** Default seat dot radius as a fraction of the available spacing. */
 export const ARC_SEAT_RATIO = 0.42;
 

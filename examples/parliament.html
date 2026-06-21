@@ -25,10 +25,10 @@
   .toggle-label .lead { font-size: 0.82rem; font-weight: 700; color: #b0b0b0; transition: color 0.2s; }
   .toggle-label .sub { font-size: 0.7rem; color: #b8b8b8; }
   .toggle-label[data-active="true"] .lead { color: #1a1a1a; }
-  .switch { width: 52px; height: 26px; border-radius: 13px; background: #d8d8d8; position: relative; cursor: pointer; flex: none; transition: background 0.2s; }
+  .switch { width: 58px; height: 30px; border-radius: 15px; background: #cfcfcf; position: relative; cursor: pointer; flex: none; transition: background 0.2s; }
   .switch.on { background: #1a1a1a; }
-  .switch .knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: transform 0.22s ease; }
-  .switch.on .knob { transform: translateX(26px); }
+  .switch .knob { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.35); transition: transform 0.22s ease; }
+  .switch.on .knob { transform: translateX(28px); }
 
   .chart { width: 100%; }
   .chart svg { width: 100%; display: block; }
@@ -80,8 +80,8 @@
 // --- Parties, in left→right order (name, colour, 2025 result, model prediction) ---
 const PARTIES = [
   { name: "Labor",                     color: "#DE3A30", results: 94, predicted: 76 },
-  { name: "One Nation",                color: "#F08A1D", results:  0, predicted: 53 },
-  { name: "Coalition",                 color: "#2B5FA5", results: 43, predicted: 12 },
+  { name: "One Nation",                color: "#F2811C", results:  0, predicted: 53 },
+  { name: "Coalition",                 color: "#2E6DB4", results: 43, predicted: 12 },
   { name: "Independent",               color: "#8C8C8C", results: 10, predicted:  8 },
   { name: "Katter's Australian Party", color: "#6E1A1A", results:  1, predicted:  1 },
   { name: "Greens",                    color: "#10A05F", results:  1, predicted:  0 },
@@ -89,7 +89,7 @@ const PARTIES = [
 ];
 
 // --- Arc layout (port of computeArcLayout from src/arc-utils.ts) ---
-const OUTER = 250, INNER_RATIO = 0.45, SEAT_RATIO = 0.42;
+const OUTER = 250, INNER_RATIO = 0.14, SEAT_RATIO = 0.42;
 
 function autoRows(total, f) {
   const k = (2 * (1 - f)) / (Math.PI * (1 + f));

@@ -18,9 +18,13 @@ describe("computeArcLayout", () => {
     expect(layout.seats).toHaveLength(totalSeats(AU_PREDICTED)); // 150
   });
 
-  it("derives a sensible row count (~6 for 150 seats)", () => {
+  it("derives a sensible row count with a sparse inner arc (8 rows for 150 seats)", () => {
     const layout = computeArcLayout(AU_PREDICTED);
-    expect(layout.rows).toBe(6);
+    expect(layout.rows).toBe(8);
+    // Inner arc is sparse, outer arc is full — matches the ABC original.
+    expect(layout.seatsPerRow[0]).toBe(4);
+    expect(layout.seatsPerRow[7]).toBe(33);
+    expect(layout.seatsPerRow).toEqual([4, 8, 13, 17, 21, 25, 29, 33]);
     expect(layout.seatsPerRow.reduce((a, b) => a + b, 0)).toBe(150);
     expect(layout.seatsPerRow.every((n) => n > 0)).toBe(true);
   });

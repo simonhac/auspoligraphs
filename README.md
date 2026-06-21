@@ -173,7 +173,7 @@ Import from `auspol-hex-cartogram/react`:
 | `parties` | `Party[]` | — | Parties in left→right order (required) |
 | `rows` | `number` | auto | Concentric rows (auto-derived from seat count) |
 | `outerRadius` | `number` | `250` | Outer radius in pixels |
-| `innerRadiusRatio` | `number` | `0.45` | Inner radius as a fraction of outer |
+| `innerRadiusRatio` | `number` | `0.14` | Inner radius as a fraction of outer (small hole → sparse inner arc) |
 | `seatRadiusRatio` | `number` | `0.42` | Dot radius as a fraction of spacing |
 | `seatRadius` | `number` | — | Explicit dot radius (overrides ratio) |
 | `animate` | `boolean` | `true` | Animate dots when seat counts change |
