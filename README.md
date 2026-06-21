@@ -10,14 +10,14 @@ Every component is built the same way: a pure layout function with no framework 
 ## Install
 
 ```bash
-npm install auspol-hex-cartogram
+npm install auspoligraphs
 ```
 
 ## Quick start (React)
 
 ```tsx
-import { FED_2025 } from "auspol-hex-cartogram";
-import { Cartogram } from "auspol-hex-cartogram/react";
+import { FED_2025 } from "auspoligraphs";
+import { Cartogram } from "auspoligraphs/react";
 
 function App() {
   return (
@@ -33,7 +33,7 @@ function App() {
 ## Quick start (parliament arc)
 
 ```tsx
-import { ParliamentArc, ResultsTable } from "auspol-hex-cartogram/react";
+import { ParliamentArc, ResultsTable } from "auspoligraphs/react";
 
 // Parties in left→right order. Works for any parliament, any size.
 const parties = [
@@ -58,7 +58,7 @@ Prefer to do your own rendering? The pure layout function returns seat positions
 for any SVG/canvas:
 
 ```javascript
-import { computeArcLayout } from "auspol-hex-cartogram";
+import { computeArcLayout } from "auspoligraphs";
 
 const { seats, seatRadius, viewBox } = computeArcLayout(parties);
 // seats[i] = { index, row, angle, x, y, party, partyIndex }
@@ -68,7 +68,7 @@ const { seats, seatRadius, viewBox } = computeArcLayout(parties);
 ## Quick start (vanilla JS)
 
 ```javascript
-import { FED_2022, HEX_SIZE, hexPoints, computeStateBorders } from "auspol-hex-cartogram";
+import { FED_2022, HEX_SIZE, hexPoints, computeStateBorders } from "auspoligraphs";
 
 const { electorates } = FED_2022; // 151 electorates
 
@@ -86,7 +86,7 @@ const borderPath = computeStateBorders(electorates, HEX_SIZE);
 Or load the raw JSON directly:
 
 ```javascript
-import data from "auspol-hex-cartogram/data/elections.json";
+import data from "auspoligraphs/data/elections.json";
 const grid = data["2025-FED"].grid; // [[col, row, state, name], ...]
 ```
 
@@ -149,7 +149,7 @@ where `size = 14` pixels. Grid bounds: col 0–13, row 0–19.
 
 ### React components
 
-Import from `auspol-hex-cartogram/react`:
+Import from `auspoligraphs/react`:
 
 **`<Cartogram>`** — full SVG map with state borders and hover effects.
 
@@ -281,15 +281,20 @@ After a federal redistribution:
 5. Add the new election to `data/elections.json`.
 6. Run tests: `npm test`
 
-## Examples
+## Component gallery
 
-- `examples/vanilla.html` — simple interactive cartogram with election switcher
-- `examples/analysis.html` — transition analysis showing movements, geographic error, and state seat counts
-- `examples/parliament.html` — parliament composition arc with a Results↔Predicted toggle and results table
+A static gallery showcasing every component live — the hex cartogram, the
+parliament arc + results table, and the votes / seats / chamber charts (each
+with an A/B toggle to demo its animation) — lives in [`site/`](site/) and
+deploys to GitHub Pages.
+
+- `npm run dev` — run the gallery locally (Vite)
+- `npm run build:site` — build the static site to `dist-site/`
 
 The `<ParliamentArc>` defaults are tuned to reproduce the ABC reference chart to
 RMS 0.02% of the outer radius; the measurement harness that established this lives
-in [`tools/arc-fidelity/`](tools/arc-fidelity/).
+in [`tools/arc-fidelity/`](tools/arc-fidelity/) and renders
+`examples/parliament.html`.
 
 ## License
 
